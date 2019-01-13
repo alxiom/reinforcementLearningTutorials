@@ -41,6 +41,7 @@ register(
 )
 
 env = gym.make('FrozenLake-v3')
+env.reset()
 env.render()  # Show the initial board
 
 while True:
@@ -53,8 +54,7 @@ while True:
     action = arrow_keys[key]
     state, reward, done, info = env.step(action)
     env.render()  # Show the board after action
-    print("State: ", state, "Action: ", action,
-          "Reward: ", reward, "Info: ", info)
+    print("State: ", state, "Action: ", action, "Reward: ", reward, "Info: ", info)
 
     if done:
         print("Finished with reward", reward)
