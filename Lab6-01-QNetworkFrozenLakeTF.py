@@ -4,8 +4,8 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 
-def one_hot(x):
-    return np.identity(16)[x:x + 1]
+def one_hot(hot, n):
+    return np.identity(n)[hot:hot + 1]
 
 
 env = gym.make('FrozenLake-v0')
@@ -37,10 +37,9 @@ with tf.Session() as sess:
         e = 1.0 / ((i / 50) + 10)
         rAll = 0
         done = False
-        local_loss = []
 
         while not done:
-            Qs = sess.run(Q_pred, feed_dict={X: one_hot(s)})
+            Qs = sess.run(Q_pred, feed_dict={X: one_hot(s, input_size)})
             if np.random.rand(1) < e:
                 a = env.action_space.sample()
             else:
@@ -50,15 +49,16 @@ with tf.Session() as sess:
             if done:
                 Qs[0, a] = reward
             else:
-                Qs1 = sess.run(Q_pred, feed_dict={X: one_hot(s1)})
+                Qs1 = sess.run(Q_pred, feed_dict={X: one_hot(s1, input_size)})
                 Qs[0, a] = reward + gamma * np.max(Qs1)
 
-            sess.run(train, feed_dict={X: one_hot(s), Y: Qs})
+            sess.run(train, feed_dict={X: one_hot(s, input_size), Y: Qs})
 
             rAll += reward
             s = s1
+
         rList.append(rAll)
 
-print("Sucess Rate : {}".format(str(sum(rList) / num_episodes)))
+print("Success Rate : {}".format(str(sum(rList) / num_episodes)))
 plt.bar(range(len(rList)), rList, color="blue")
 plt.show()
