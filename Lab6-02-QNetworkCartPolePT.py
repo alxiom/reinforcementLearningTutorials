@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 env = gym.make('CartPole-v0')
+env._max_episode_steps = 10001
 
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.n
@@ -35,6 +36,7 @@ for i in range(num_episodes):
     s = env.reset()
     e = 1.0 / ((i / 10) + 1)
     rAll = 0
+    step_count = 0
     done = False
 
     while not done:
@@ -60,10 +62,11 @@ for i in range(num_episodes):
         optimizer.step()
 
         rAll += reward
+        step_count += 1
         s = s1
 
     rList.append(rAll)
-    print("episode = {}, reward = {}".format(i, rAll))
+    print("episode = {}, step = {}, reward = {}".format(i, step_count, rAll))
     if len(rList) > 10 and np.mean(rList[-10:]) > 500:
         break
 
