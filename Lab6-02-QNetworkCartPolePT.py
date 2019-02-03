@@ -15,7 +15,6 @@ class QNet(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(QNet, self).__init__()
         self.linear = nn.Linear(input_dim, output_dim, bias=False)
-        nn.init.xavier_uniform_(self.linear.weight)
 
     def forward(self, inputs):
         return self.linear(inputs)
@@ -36,7 +35,6 @@ for i in range(num_episodes):
     s = env.reset()
     e = 1.0 / ((i / 10) + 1)
     rAll = 0
-    step_count = 0
     done = False
 
     while not done:
@@ -65,7 +63,7 @@ for i in range(num_episodes):
         s = s1
 
     rList.append(rAll)
-    print("episode = {}, step = {}".format(i, rAll))
+    print("episode = {}, reward = {}".format(i, rAll))
     if len(rList) > 10 and np.mean(rList[-10:]) > 500:
         break
 
