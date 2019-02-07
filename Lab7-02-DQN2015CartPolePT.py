@@ -16,17 +16,19 @@ input_size = env.observation_space.shape[0]
 output_size = env.action_space.n
 hidden_size = 64
 
-replay_memory = 50000
 batch_size = 64
-learning_rate = 1e-1
 training_interval = 10
+replay_memory = 50000
+learning_rate = 1e-1
 target_update_interval = 5
 
 gamma = 0.99
-num_episodes = 5000
+max_episodes = 5000
+half_eps_episode = max_episodes * 0.02
 
 break_test_count = 4
 break_test_avg = 5000
+step_limit = 5000
 
 
 class DQN(nn.Module):
@@ -61,7 +63,7 @@ def replay_train(main_net, target_net, train_batch, criterion, optimizer):
         x_batch.append(state)
         y_batch.append(q)
 
-        loss = criterion(main_net(torch.Tensor(x_batch)), torch.Tensor(y_batch))
+        loss = criterion(main_net(torch.Tensor(x_batch).float()), torch.Tensor(y_batch).float())
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -74,11 +76,9 @@ def simulate_bot(net):
     reward_sum = 0
     while True:
         env.render()
-
         x = torch.Tensor(state).float()
         q = net(x).data.numpy()
         action = np.argmax(q)
-
         state, reward, done, _ = env.step(action)
         reward_sum += reward
         if done:
@@ -100,20 +100,19 @@ def main():
     replay_buffer = deque(maxlen=replay_memory)
     step_counts = deque(maxlen=break_test_count)
 
-    for episode in range(num_episodes):
+    for episode in range(max_episodes):
         state = env.reset()
-        e = 1.0 / ((episode / 10) + 1)
+        e = 1.0 / ((episode / half_eps_episode) + 1.0)
         rewards = 0
         step_count = 0
         done = False
 
         while not done:
-            x = torch.Tensor(state).float()
-            q = main_dqn(x).data.numpy()
-
             if np.random.rand(1) < e:
                 action = env.action_space.sample()
             else:
+                x = torch.Tensor(state).float()
+                q = main_dqn(x).data.numpy()
                 action = np.argmax(q)
 
             next_state, reward, done, _ = env.step(action)
@@ -126,7 +125,7 @@ def main():
             step_count += 1
             state = next_state
 
-            if step_count > 10000:  # good enough
+            if step_count > step_limit:  # good enough
                 break
 
         print(f"episode = {episode + 1}, rewards = {rewards}, steps = {step_count}")
@@ -143,8 +142,7 @@ def main():
         if ((episode + 1) % training_interval == 0) & (len(replay_buffer) > batch_size * training_interval):
                 for _ in range(training_interval):
                     minibatch = random.sample(replay_buffer, batch_size)
-                    loss = replay_train(main_dqn, target_dqn, minibatch, criterion, optimizer)
-                print(f"loss = {loss}")
+                    replay_train(main_dqn, target_dqn, minibatch, criterion, optimizer)
 
     main_dqn.eval()
     simulate_bot(main_dqn)
