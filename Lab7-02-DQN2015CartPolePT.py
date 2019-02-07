@@ -138,9 +138,9 @@ def main():
             target_dqn.load_state_dict(main_dqn.state_dict())
 
         if ((episode + 1) % training_interval == 0) & (len(replay_buffer) > batch_size * training_interval):
-                for _ in range(training_interval):
-                    minibatch = random.sample(replay_buffer, batch_size)
-                    replay_train(main_dqn, target_dqn, minibatch, criterion, optimizer)
+            for _ in range(training_interval):
+                minibatch = random.sample(replay_buffer, batch_size)
+                replay_train(main_dqn, target_dqn, minibatch, criterion, optimizer)
 
     main_dqn.eval()
     simulate_bot(main_dqn)
