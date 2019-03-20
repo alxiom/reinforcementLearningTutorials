@@ -86,7 +86,6 @@ def main(episodes):
     running_reward = 10
     for episode in range(episodes):
         state = env.reset()
-        done = False
         time = 0
 
         for time in range(step_limit):
