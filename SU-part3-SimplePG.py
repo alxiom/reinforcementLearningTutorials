@@ -1,12 +1,8 @@
 import gym
 import numpy as np
-import matplotlib.pyplot as plt
-from tqdm import tqdm, trange
-import pandas as pd
 import torch
 from torch import nn
 from torch import optim
-import torch.nn.functional as ftn
 from torch.distributions import Categorical
 
 step_limit = 1000
@@ -47,18 +43,6 @@ class Policy(nn.Module):
 
 policy = Policy(hidden_dim=128)
 optimizer = optim.Adam(policy.parameters(), lr=learning_rate)
-
-
-# state = env.reset()
-# state_tensor = torch.FloatTensor(state)
-# action_tensor = policy(state_tensor)
-# action_dist = Categorical(action_tensor)
-# action = action_dist.sample()
-# print(state_tensor)
-# print(policy.policy_history.dim())
-# print(action_tensor)
-# print(action_dist.sample())
-# print(action.item())
 
 
 def select_action(state):
@@ -103,6 +87,7 @@ def main(episodes):
     for episode in range(episodes):
         state = env.reset()
         done = False
+        time = 0
 
         for time in range(step_limit):
             action = select_action(state)
